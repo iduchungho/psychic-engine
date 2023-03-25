@@ -1,5 +1,4 @@
-// Package database cloudinary
-package cloudinary
+package cloud
 
 import (
 	"context"
@@ -7,6 +6,7 @@ import (
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
 	"log"
+	"os"
 	"sync"
 )
 
@@ -18,7 +18,7 @@ func GetConnCloudinary() *cloudinary.Cloudinary {
 		lockCld.Lock()
 		defer lockCld.Unlock()
 		if cld == nil {
-			cldLocal, err := cloudinary.New()
+			cldLocal, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -34,6 +34,9 @@ func GetConnCloudinary() *cloudinary.Cloudinary {
 
 func UpdateImages(cld *cloudinary.Cloudinary, file interface{}) (*uploader.UploadResult, error) {
 	var ctx = context.Background()
-	updateResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{})
+	updateResult, err := cld.Upload.Upload(ctx, file, uploader.UploadParams{
+		ResourceType: "auto",
+		Folder:       "smart-home",
+	})
 	return updateResult, err
 }

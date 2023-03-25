@@ -1,15 +1,15 @@
 package controller
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"log"
 	"os"
 	"smhome/app/models"
-	"smhome/platform/cache"
 	"smhome/pkg/services"
 	"smhome/pkg/utils"
-
-	"github.com/gofiber/fiber/v2"
+	"smhome/platform/cache"
+	"smhome/platform/cloudinary"
 )
 
 func Login(c *fiber.Ctx) error {
@@ -110,6 +110,29 @@ func AddNewUser(c *fiber.Ctx) error {
 		})
 	}
 
+	// get file header
+	fileHeader, errFile := c.FormFile("avatar")
+	if errFile != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errFile.Error(),
+		})
+	}
+	// open header file-header
+	file, errOpen := fileHeader.Open()
+	if errOpen != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errOpen.Error(),
+		})
+	}
+	cld := cloud.GetConnCloudinary()
+	resp, errCld := cloud.UpdateImages(cld, file)
+	if errCld != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errCld.Error(),
+		})
+	}
+	userMd.Avatar = resp.SecureURL
+
 	userMd.Password = string(hashPass)
 	if errIs := newUser.InsertData(userMd); errIs != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -143,9 +166,6 @@ func Logout(c *fiber.Ctx) error {
 	})
 }
 
-//
-//func Public(c *gin.Context) {
-//	c.JSON(200, gin.H{
-//		"message": os.Getenv("DB_NAME"),
-//	})
-//}
+func ChangeAvatar(c *fiber.Ctx) error {
+	return nil
+}

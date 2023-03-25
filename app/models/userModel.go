@@ -8,14 +8,13 @@ import (
 )
 
 type User struct {
-	Type      string   `json:"type"`
-	Id        string   `json:"id"`
-	FirstName string   `json:"firstname"`
-	LastName  string   `json:"lastname"`
-	UserName  string   `json:"username"`
-	Password  string   `json:"password"`
-	Avatar    string   `json:"avatar"`
-	Actions   []Action `json:"actions"`
+	Type      string `json:"type" form:"type"`
+	Id        string `json:"id" form:"id"`
+	FirstName string `json:"firstname" form:"firstname"`
+	LastName  string `json:"lastname" form:"lastname"`
+	UserName  string `json:"username" form:"username"`
+	Password  string `json:"password" form:"password"`
+	Avatar    string `json:"avatar" form:"avatar"`
 }
 
 func (u *User) SetElement(typ string, value interface{}) error {
@@ -52,7 +51,6 @@ func (u *User) InsertData(payload interface{}) error {
 	u.LastName = user.LastName
 	u.Avatar = user.Avatar
 	u.Password = user.Password
-	u.Actions = user.Actions
 
 	res, _ := u.FindDocument("username", u.UserName)
 	if res != nil {
@@ -88,7 +86,6 @@ func (u *User) FindDocument(key string, val string) (interface{}, error) {
 	u.LastName = res.LastName
 	u.Avatar = res.Avatar
 	u.Password = res.Password
-	u.Actions = res.Actions
 
 	return res, nil
 }

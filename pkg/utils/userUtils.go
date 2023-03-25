@@ -27,6 +27,6 @@ func ComparePassword(hashPass string, pass string) error {
 func GenerateToken(id string) *jwt.Token {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": id,
-		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(),
+		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(), // 1 day
 	})
 }

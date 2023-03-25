@@ -1,8 +1,11 @@
 // backend for smart home projects
-// author:  @yesic4n
-// 			@lamdienchinh
-//			@Nguyenleminhbao-tt5
-///////////////////////////////////
+// author:
+//
+//	@yesic4n
+//	@lamdienchinh
+//	@Nguyenleminhbao-tt5
+//
+// /////////////////////////////////
 // main.go file
 // Author: Ho Duc Hung
 // Modify .env.example to .env
@@ -19,7 +22,7 @@ import (
 // @version 1.0
 // @description: main function where every beginning.
 // @BasePath /api
-// @yesic4n github
+// @yesic4n GitHub
 // @name Authorization
 func main() {
 	////////////////////////////////
