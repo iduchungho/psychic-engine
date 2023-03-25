@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"smhome/config"
+	"smhome/platform/database"
 )
 
 type User struct {

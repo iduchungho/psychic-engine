@@ -1,7 +1,7 @@
 package route
 
 import (
-	"smhome/app/controller"
+	"smhome/app/controllers"
 
 	"github.com/gofiber/fiber/v2"
 )

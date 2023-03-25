@@ -8,7 +8,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	database "smhome/config"
+	"smhome/platform/database"
 
 	"go.mongodb.org/mongo-driver/bson"
 )

@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"smhome/pkg/service"
+	"smhome/pkg/services"
 
 	"github.com/gofiber/fiber/v2"
 )

@@ -3,23 +3,33 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"go.mongodb.org/mongo-driver/bson"
-	"os"
-	"smhome/config"
-	"smhome/app/model"
-	"time"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
+	"go.mongodb.org/mongo-driver/bson"
+	"os"
+	"smhome/app/models"
+	"smhome/platform/cache"
+	"smhome/platform/database"
+	"time"
 )
 
-func RequireUser(c *fiber.Ctx) error{
+func RequireUser(c *fiber.Ctx) error {
 	// Get the cookie off req
-	tokenString := c.Cookies("Authorization")
+	sess, err := cache.GetSessionStore().Get(c)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	tkStr := sess.Get("Authorization")
+	if tkStr == nil || tkStr == -1 {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"data":    "no token in session",
+			"success": false,
+		})
+	}
 
-	// if err != nil {
-	// 	c.AbortWithStatus(http.StatusUnauthorized)
-	// }
+	tokenString := tkStr.(string)
 
 	token, _ := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
@@ -50,12 +60,15 @@ func RequireUser(c *fiber.Ctx) error{
 		// attach to req
 		// cookie := new(fiber.Cookie)
 		// cookie.Name = "john"
-		// cookie.Value = 
+		// cookie.Value =
 		// cookie.Expires = time.Now().Add(24 * time.Hour)
 		// c.Cookie("user", user)
 
 		// continue
-		c.Next()
+		errNext := c.Next()
+		if errNext != nil {
+			return errNext
+		}
 	}
-	return c.SendStatus(fiber.StatusUnauthorized)
+	return c.SendStatus(fiber.StatusOK)
 }
