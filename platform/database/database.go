@@ -64,3 +64,13 @@ func GetConnection() *mongo.Client {
 	}
 	return connect
 }
+
+func GetCollection(typ string) *mongo.Collection {
+	switch typ {
+	case "Users":
+		return GetConnection().Database("SmartHomeDB").Collection("Users")
+	case "Sensors":
+		return GetConnection().Database("SmartHomeDB").Collection("Sensors")
+	}
+	return nil
+}

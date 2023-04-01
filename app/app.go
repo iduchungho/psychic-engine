@@ -47,8 +47,10 @@ func (app *App) Run() {
 			AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 		}))
 
+		// logger actions to server
 		app.r.Use(logger.New())
 
+		// routing services application
 		route.SenSorRoute(app.r)
 		route.UserRoute(app.r)
 
@@ -56,7 +58,7 @@ func (app *App) Run() {
 		if host != "" {
 			err := app.r.Listen(host)
 			if err != nil {
-				panic("Can't run gin engine")
+				panic("Can't run fiber engine")
 			}
 		} else {
 			err := app.r.Listen("localhost:8080")

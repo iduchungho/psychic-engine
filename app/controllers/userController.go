@@ -110,29 +110,6 @@ func AddNewUser(c *fiber.Ctx) error {
 		})
 	}
 
-	// get file header
-	fileHeader, errFile := c.FormFile("avatar")
-	if errFile != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": errFile.Error(),
-		})
-	}
-	// open header file-header
-	file, errOpen := fileHeader.Open()
-	if errOpen != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": errOpen.Error(),
-		})
-	}
-	cld := cloud.GetConnCloudinary()
-	resp, errCld := cloud.UpdateImages(cld, file)
-	if errCld != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": errCld.Error(),
-		})
-	}
-	userMd.Avatar = resp.SecureURL
-
 	userMd.Password = string(hashPass)
 	if errIs := newUser.InsertData(userMd); errIs != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -167,5 +144,161 @@ func Logout(c *fiber.Ctx) error {
 }
 
 func ChangeAvatar(c *fiber.Ctx) error {
-	return nil
+	var avtar struct {
+		Avt string `json:"avt" form:"avt"`
+	}
+
+	if c.BodyParser(&avtar) != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse body",
+		})
+	}
+
+	username := c.Params("id")
+	user, err := service.NewEntityContext("user")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	// get file header
+	fileHeader, errFile := c.FormFile("avt")
+	if errFile != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errFile.Error(),
+		})
+	}
+	// open header file-header
+	file, errOpen := fileHeader.Open()
+	if errOpen != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errOpen.Error(),
+		})
+	}
+	cld := cloud.GetConnCloudinary()
+	resp, errCld := cloud.UpdateImages(cld, file)
+	if errCld != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errCld.Error(),
+		})
+	}
+
+	_, errFind := user.FindDocument("username", username)
+	if errFind != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errFind.Error(),
+		})
+	}
+
+	err = user.UpdateData("avatar", resp.SecureURL)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if err = user.SetElement("avatar", resp.SecureURL); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"data":    user,
+	})
+}
+
+func GetAllUser(c *fiber.Ctx) error {
+	user, err := service.NewEntityContext("user")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	res, errRes := user.GetEntity("")
+	if errRes != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": errRes.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": res,
+	})
+}
+
+func DeleteUser(c *fiber.Ctx) error {
+	username := c.Params("username")
+	user, err := service.NewEntityContext("user")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	err = user.DeleteEntity("username", username)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "user was deleted",
+		"user":    username,
+	})
+}
+
+func UpdateInformation(c *fiber.Ctx) error {
+	var body struct {
+		FirstName string `json:"firstname"`
+		LastName  string `json:"lastname"`
+		Password  string `json:"password"`
+	}
+
+	if c.BodyParser(&body) != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "can't read body request",
+		})
+	}
+
+	username := c.Params("username")
+
+	user, _ := service.NewEntityContext("user")
+	_, err := user.FindDocument("username", username)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	hashPass, err := utils.GenPassword(body.Password)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if err = user.UpdateData("password", string(hashPass)); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if err = user.UpdateData("firstname", body.FirstName); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if err = user.UpdateData("lastname", body.LastName); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data":    body,
+		"success": true,
+		"message": "ok",
+	})
 }

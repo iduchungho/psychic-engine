@@ -1,6 +1,7 @@
 package controller
 
 import (
+	model "smhome/app/models"
 	"smhome/pkg/services"
 
 	"github.com/gofiber/fiber/v2"
@@ -34,8 +35,15 @@ func GetTemperature(c *fiber.Ctx) error {
 		})
 	}
 
+	stat, ok := res.(model.Sensors)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": ok,
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data": res,
+		"data": service.Statistical(&stat),
 	})
 }
 
@@ -67,7 +75,14 @@ func GetHumidity(c *fiber.Ctx) error {
 		})
 	}
 
+	stat, ok := res.(model.Sensors)
+	if !ok {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": ok,
+		})
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data": res,
+		"data": service.Statistical(&stat),
 	})
 }

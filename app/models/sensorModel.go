@@ -76,17 +76,13 @@ func (s *Sensors) GetEntity(param string) (interface{}, error) {
 	return sensors, nil
 }
 
-func (s *Sensors) DeleteEntity(param string) error {
+func (s *Sensors) DeleteEntity(key string, value string) error {
 	return nil
 }
 
-func (s *Sensors) UpdateData(payload interface{}) error {
-	sensor, ok := payload.(Sensors)
-	if !ok {
-		return errors.New("InitField: Require a Sensors")
-	}
+func (s *Sensors) UpdateData(key string, payload interface{}) error {
 	filter := bson.D{{"type", s.Type}}
-	update := bson.D{{"$set", bson.D{{"payload", sensor.Payload}}}}
+	update := bson.D{{"$set", bson.D{{key, payload}}}}
 	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 	_, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
@@ -104,7 +100,7 @@ func (s *Sensors) InsertData(payload interface{}) error {
 	sensors.Type = *typ
 	instanceSensor, _ := s.FindDocument("type", *typ)
 	if instanceSensor != nil {
-		err := s.UpdateData(sensors)
+		err := s.UpdateData("payload", sensors.Payload)
 		if err != nil {
 			return err
 		}
