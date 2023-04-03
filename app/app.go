@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"os"
+	"smhome/pkg/middleware"
 	"smhome/pkg/routes"
 	"sync"
 
@@ -38,7 +39,7 @@ func GetApplication() *App {
 
 func (app *App) Run() {
 	if app.r != nil {
-
+		// define cors middleware
 		app.r.Use(cors.New(cors.Config{
 			AllowHeaders: "Origin,Content-Type,Accept,Content-Length,Accept-Language," +
 				"Accept-Encoding,Connection,Access-Control-Allow-Origin",
@@ -49,6 +50,7 @@ func (app *App) Run() {
 
 		// logger actions to server
 		app.r.Use(logger.New())
+		app.r.Use(middleware.Redirect)
 
 		// routing services application
 		route.SenSorRoute(app.r)
