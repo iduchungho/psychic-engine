@@ -14,8 +14,6 @@ package main
 
 import (
 	appli "smhome/app"
-	// command line for heroku deployment
-	"smhome/pkg/utils"
 )
 
 // @title smhome: main
@@ -27,7 +25,7 @@ import (
 func main() {
 	////////////////////////////////
 	// comment line for heroku deployment
-	utils.LoadEnvFile()
+	//utils.LoadEnvFile()
 	/////////////////////////////////
 	// create application
 	app := appli.GetApplication()
