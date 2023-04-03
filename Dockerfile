@@ -1,24 +1,17 @@
-# Sử dụng Go Image được build sẵn
-FROM golang:1.16-alpine
+# Base image golang:1.16
+FROM golang:1.16
 
-# Thiết lập biến môi trường GOPATH và PATH
-ENV GOPATH /go
-ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
-
-# Thiết lập thư mục làm việc trong container
+# Thiết lập thư mục làm việc
 WORKDIR /app
 
-# Sao chép file go.mod và go.sum vào thư mục làm việc
-COPY go.mod go.sum ./
-
-# Tải về các phụ thuộc của ứng dụng
-RUN go mod download
-
-# Sao chép toàn bộ source code vào thư mục làm việc
+# Sao chép mã nguồn vào thư mục làm việc
 COPY . .
 
-# Build ứng dụng
+# Biên dịch ứng dụng
 RUN go build -o main .
 
-# Thiết lập lệnh mặc định để chạy ứng dụng khi container được bật
-CMD ["/app/main"]
+# Thiết lập cổng mặc định
+EXPOSE 8080
+
+# Chạy ứng dụng khi container được khởi chạy
+CMD ["./main"]
