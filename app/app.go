@@ -61,7 +61,7 @@ func (app *App) Run() {
 				panic("Can't run fiber engine")
 			}
 		} else {
-			err := app.r.Listen("0.0.0.0")
+			err := app.r.Listen("0.0.0.0:8080")
 			if err != nil {
 				panic("Can't run fiber engine")
 			}
