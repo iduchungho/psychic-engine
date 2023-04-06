@@ -52,9 +52,13 @@ func (app *App) Run() {
 		app.r.Use(logger.New())
 		app.r.Use(middleware.Redirect)
 
+		// generate collection
+		//database.GenerateCollection()
+
 		// routing services application
 		route.SenSorRoute(app.r)
 		route.UserRoute(app.r)
+		route.ActionRoute(app.r)
 
 		host := os.Getenv("HOST")
 		if host != "" {

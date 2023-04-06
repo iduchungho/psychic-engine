@@ -1,6 +1,7 @@
 package repository
 
 var DefaultRoutes = []string{
+	// user default routes
 	"/api/user/login",
 	"/api/user/new",
 	"/api/user/logout",
@@ -8,8 +9,12 @@ var DefaultRoutes = []string{
 	"/api/user/getAll",
 	"/api/user/delete/:username",
 	"/api/user/update/:username",
+	// sensor default routes
 	"/api/sensor/temperature",
 	"/api/sensor/humidity",
+	// action default routes
+	"/api/action/get/:username",
+	"/api/action/log",
 }
 
 //r.Post("/api/user/login", controller.Login)

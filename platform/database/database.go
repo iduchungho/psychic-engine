@@ -65,12 +65,16 @@ func GetConnection() *mongo.Client {
 	return connect
 }
 
-func GetCollection(typ string) *mongo.Collection {
-	switch typ {
+func GetCollection(collectionName string) *mongo.Collection {
+	switch collectionName {
 	case "Users":
 		return GetConnection().Database("SmartHomeDB").Collection("Users")
 	case "Sensors":
 		return GetConnection().Database("SmartHomeDB").Collection("Sensors")
+	case "Actions":
+		return GetConnection().Database("SmartHomeDB").Collection("Actions")
+	case "Notifications":
+		return GetConnection().Database("SmartHomeDB").Collection("Notifications")
 	}
 	return nil
 }

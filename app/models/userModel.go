@@ -7,6 +7,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"smhome/platform/database"
+	"strconv"
 )
 
 type User struct {
@@ -27,8 +28,17 @@ func (u *User) SetElement(typ string, value interface{}) error {
 	case "avatar":
 		u.Avatar = value.(string)
 		return nil
+	case "firstname":
+		u.FirstName = value.(string)
+		return nil
+	case "lastname":
+		u.LastName = value.(string)
+		return nil
+	case "password":
+		u.Password = value.(string)
+		return nil
 	}
-	return nil
+	return errors.New("type not support")
 }
 
 func (u *User) GetEntity(param string) (interface{}, error) {
@@ -84,8 +94,11 @@ func (u *User) InsertData(payload interface{}) error {
 		return errors.New("InitField: Require a User")
 	}
 
+	count, _ := database.CountDocuments(database.GetConnection().Database("SmartHomeDB"), "Users")
+	count++
+
 	u.Type = "user"
-	u.Id = user.Id
+	u.Id = strconv.FormatInt(count, 10)
 	u.UserName = user.UserName
 	u.FirstName = user.FirstName
 	u.LastName = user.LastName

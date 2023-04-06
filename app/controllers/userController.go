@@ -112,13 +112,13 @@ func AddNewUser(c *fiber.Ctx) error {
 
 	userMd.Password = string(hashPass)
 	if errIs := newUser.InsertData(userMd); errIs != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
 			"error": errIs.Error(),
 		})
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data": userMd,
+		"data": newUser,
 	})
 
 }

@@ -1,7 +1,9 @@
 package service
 
-import md "smhome/app/models"
+import (
+	md "smhome/app/models"
+)
 
-func newAction() *md.Actions {
-	return new(md.Actions)
+func newAction() *md.Action {
+	return new(md.Action)
 }

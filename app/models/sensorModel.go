@@ -34,7 +34,7 @@ func (s *Sensors) SetElement(typ string, value interface{}) error {
 		s.Type = value.(string)
 		return nil
 	}
-	return nil
+	return errors.New("unknown type")
 }
 
 func (s *Sensors) GetEntity(param string) (interface{}, error) {
@@ -77,13 +77,19 @@ func (s *Sensors) GetEntity(param string) (interface{}, error) {
 }
 
 func (s *Sensors) DeleteEntity(key string, value string) error {
+	filter := bson.D{{key, value}}
+	collection := database.GetCollection("Sensors")
+	_, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func (s *Sensors) UpdateData(key string, payload interface{}) error {
+	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 	filter := bson.D{{"type", s.Type}}
 	update := bson.D{{"$set", bson.D{{key, payload}}}}
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 	_, err := collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return err
@@ -92,6 +98,7 @@ func (s *Sensors) UpdateData(key string, payload interface{}) error {
 }
 
 func (s *Sensors) InsertData(payload interface{}) error {
+	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 	typ, _ := s.GetElement("type")
 	sensors, ok := payload.(Sensors)
 	if !ok {
@@ -107,8 +114,6 @@ func (s *Sensors) InsertData(payload interface{}) error {
 		return nil
 	}
 
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
-
 	_, err := collection.InsertOne(context.TODO(), s)
 	if err != nil {
 		return err
@@ -117,10 +122,10 @@ func (s *Sensors) InsertData(payload interface{}) error {
 }
 func (s *Sensors) FindDocument(key string, val string) (interface{}, error) {
 
+	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 	filter := bson.D{{key, val}}
 
 	var res Sensors
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 
 	err := collection.FindOne(context.TODO(), filter).Decode(&res)
 
