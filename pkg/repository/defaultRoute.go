@@ -5,15 +5,16 @@ var DefaultRoutes = []string{
 	"/api/user/login",
 	"/api/user/new",
 	"/api/user/logout",
-	"/api/user/changeAvatar/:id",
+	"/api/user/changeAvatar",
 	"/api/user/getAll",
-	"/api/user/delete/:username",
-	"/api/user/update/:username",
+	"/api/user/delete",
+	"/api/user/update",
+	"/api/user/getUserById",
 	// sensor default routes
 	"/api/sensor/temperature",
 	"/api/sensor/humidity",
 	// action default routes
-	"/api/action/get/:username",
+	"/api/action/get",
 	"/api/action/log",
 }
 

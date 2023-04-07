@@ -12,6 +12,21 @@ import (
 	"smhome/platform/cloudinary"
 )
 
+func GetUserByID(c *fiber.Ctx) error {
+	id := c.Params("id")
+	user, _ := service.NewEntityContext("user")
+	res, err := user.FindDocument("id", id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data":   res,
+		"status": "ok",
+	})
+}
+
 func Login(c *fiber.Ctx) error {
 	var body struct {
 		Username string `json:"username"`
@@ -57,12 +72,18 @@ func Login(c *fiber.Ctx) error {
 	// c.JSON(http.StatusOK, gin.H{
 	// 	"token": tokenString,
 	// })
-	sess, errSess := cache.GetSessionStore().Get(c)
+	//sess, errSess := cache.GetSessionStore().Get(c)
+	sess, errSess := cache.GetSessionStoreSlice(*id).Get(c)
 	if errSess != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": errSess.Error(),
 		})
 	}
+
+	// TODO: set authorization for more people
+	//  key: Authorization1, Authorization2, ....
+	//  Don't set token one key "Authorization"
+
 	sess.Set("Authorization", tokenString)
 	defer func(sess *session.Session) {
 		err := sess.Save()
@@ -124,7 +145,15 @@ func AddNewUser(c *fiber.Ctx) error {
 }
 
 func Logout(c *fiber.Ctx) error {
-	sess, err := cache.GetSessionStore().Get(c)
+
+	/**
+	* TODO: set authorization for more people
+	*		key: Authorization1, Authorization2, ....
+	*		api src : /api/user/logout/:id
+	*		find id to get session_id then delete it
+	**/
+
+	sess, err := cache.GetSessionStoreSlice(c.Params("id")).Get(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -154,7 +183,7 @@ func ChangeAvatar(c *fiber.Ctx) error {
 		})
 	}
 
-	username := c.Params("id")
+	id := c.Params("id")
 	user, err := service.NewEntityContext("user")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -183,7 +212,7 @@ func ChangeAvatar(c *fiber.Ctx) error {
 		})
 	}
 
-	_, errFind := user.FindDocument("username", username)
+	_, errFind := user.FindDocument("id", id)
 	if errFind != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": errFind.Error(),
@@ -228,14 +257,14 @@ func GetAllUser(c *fiber.Ctx) error {
 }
 
 func DeleteUser(c *fiber.Ctx) error {
-	username := c.Params("username")
+	id := c.Params("id")
 	user, err := service.NewEntityContext("user")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
-	err = user.DeleteEntity("username", username)
+	err = user.DeleteEntity("id", id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -244,7 +273,7 @@ func DeleteUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
 		"message": "user was deleted",
-		"user":    username,
+		"id":      id,
 	})
 }
 
@@ -261,10 +290,10 @@ func UpdateInformation(c *fiber.Ctx) error {
 		})
 	}
 
-	username := c.Params("username")
+	id := c.Params("id")
 
 	user, _ := service.NewEntityContext("user")
-	_, err := user.FindDocument("username", username)
+	_, err := user.FindDocument("id", id)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

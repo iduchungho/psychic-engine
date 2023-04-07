@@ -6,8 +6,18 @@ import (
 	service "smhome/pkg/services"
 )
 
-func GetActionByUsername(c *fiber.Ctx) error {
-	return nil
+func GetActionByID(c *fiber.Ctx) error {
+	action, _ := service.NewEntityContext("action")
+	id := c.Params("id")
+	actions, err := action.GetEntity(id)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": err.Error(),
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"data": actions,
+	})
 }
 
 func PushActionLog(c *fiber.Ctx) error {
@@ -25,12 +35,15 @@ func PushActionLog(c *fiber.Ctx) error {
 		})
 	}
 
+	id := c.Params("id")
+
 	var actionOj model.Action
 	actionOj.UserAction = body.UserAction
 	actionOj.Sensor = body.Sensor
 	actionOj.ActionName = body.ActionName
 	actionOj.StatusDesc = body.StatusDesc
 	actionOj.Status = body.Status
+	actionOj.UserID = id
 
 	action, _ := service.NewEntityContext("action")
 	err := action.InsertData(actionOj)

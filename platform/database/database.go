@@ -65,6 +65,11 @@ func GetConnection() *mongo.Client {
 	return connect
 }
 
+// GetCollection Get Collection DB
+// Users
+// Sensors
+// Actions
+// Notifications
 func GetCollection(collectionName string) *mongo.Collection {
 	switch collectionName {
 	case "Users":

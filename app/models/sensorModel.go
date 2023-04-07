@@ -106,7 +106,9 @@ func (s *Sensors) InsertData(payload interface{}) error {
 	}
 	sensors.Type = *typ
 	instanceSensor, _ := s.FindDocument("type", *typ)
+	// FIXME : BUG HERE
 	if instanceSensor != nil {
+		//s.Payload = append(s.Payload, sensors.Payload[0])
 		err := s.UpdateData("payload", sensors.Payload)
 		if err != nil {
 			return err
@@ -128,10 +130,11 @@ func (s *Sensors) FindDocument(key string, val string) (interface{}, error) {
 	var res Sensors
 
 	err := collection.FindOne(context.TODO(), filter).Decode(&res)
-
 	if err != nil {
 		return nil, err
 	}
+	s.Type = res.Type
+	s.Payload = res.Payload
 	return res, nil
 }
 

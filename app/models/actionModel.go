@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"smhome/platform/database"
 	"strconv"
 	"time"
@@ -11,6 +12,7 @@ import (
 
 type Action struct {
 	UserAction string `json:"user_action"`
+	UserID     string `json:"user_id"`
 	Sensor     string `json:"sensor"`
 	Id         string `json:"id"`
 	ActionName string `json:"action_name"`
@@ -35,7 +37,30 @@ func (a *Action) DeleteEntity(key string, value string) error {
 }
 
 func (a *Action) GetEntity(param string) (interface{}, error) {
-	return nil, nil
+	findOptions := options.Find()
+	filter := bson.D{{"userid", param}}
+	collection := database.GetCollection("Actions")
+	var action []*Action
+	cursor, err := collection.Find(context.TODO(), filter, findOptions)
+	if err != nil {
+		return nil, err
+	}
+	for cursor.Next(context.TODO()) {
+		var elem Action
+		err = cursor.Decode(&elem)
+		if err != nil {
+			return nil, err
+		}
+		action = append(action, &elem)
+	}
+	if err = cursor.Err(); err != nil {
+		return nil, err
+	}
+	err = cursor.Close(context.TODO())
+	if err != nil {
+		return nil, err
+	}
+	return action, nil
 }
 
 func (a *Action) UpdateData(key string, payload interface{}) error {
@@ -63,6 +88,7 @@ func (a *Action) InsertData(payload interface{}) error {
 	a.Sensor = action.Sensor
 	a.TimeStamp = t.Format("2006-01-02 15:04:05")
 	a.ActionName = action.ActionName
+	a.UserID = action.UserID
 
 	_, err = collection.InsertOne(context.TODO(), a)
 	if err != nil {

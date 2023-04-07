@@ -8,6 +8,7 @@ import (
 // Factory method Design Pattern
 // param typ string.
 
+// NewEntityContext user, action, sensors
 func NewEntityContext(typ string) (interfaces.IEntity, error) {
 	switch typ {
 	case "user":

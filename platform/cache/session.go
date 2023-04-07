@@ -7,6 +7,9 @@ import (
 
 var store *session.Store
 var lockSession = &sync.Mutex{}
+var storeSlice map[string]*session.Store
+
+// TODO: set multi session id
 
 func GetSessionStore() *session.Store {
 	if store == nil {
@@ -20,4 +23,21 @@ func GetSessionStore() *session.Store {
 		}
 	}
 	return store
+}
+
+func GetSessionStoreSlice(name string) *session.Store {
+	if storeSlice == nil {
+		storeSlice = make(map[string]*session.Store)
+	}
+	if storeSlice[name] == nil {
+		lockSession.Lock()
+		defer lockSession.Unlock()
+		if storeSlice[name] == nil {
+			storeSlice[name] = session.New()
+			return storeSlice[name]
+		} else {
+			return storeSlice[name]
+		}
+	}
+	return storeSlice[name]
 }
