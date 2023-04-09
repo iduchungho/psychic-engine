@@ -13,6 +13,7 @@ var DefaultRoutes = []string{
 	// sensor default routes
 	"/api/sensor/temperature",
 	"/api/sensor/humidity",
+	"/api/sensor/light",
 	// action default routes
 	"/api/action/get",
 	"/api/action/log",

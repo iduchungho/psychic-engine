@@ -5,12 +5,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"go.mongodb.org/mongo-driver/bson"
 	"io"
 	"net/http"
 	"os"
+	"smhome/pkg/repository"
 	"smhome/platform/database"
-
-	"go.mongodb.org/mongo-driver/bson"
+	"strconv"
+	"time"
 )
 
 type Sensor struct {
@@ -24,8 +26,12 @@ type Sensor struct {
 }
 
 type Sensors struct {
-	Type    string   `json:"type"`
-	Payload []Sensor `json:"payload"`
+	Id       string   `json:"id"`
+	Edited   string   `json:"edited"`
+	Created  string   `json:"created"`
+	Type     string   `json:"type"`
+	Uploaded string   `json:"uploaded"`
+	Payload  []Sensor `json:"payload"`
 }
 
 func (s *Sensors) SetElement(typ string, value interface{}) error {
@@ -33,16 +39,14 @@ func (s *Sensors) SetElement(typ string, value interface{}) error {
 	case "type":
 		s.Type = value.(string)
 		return nil
+	case "edited":
+		s.Edited = value.(string)
+		return nil
 	}
 	return errors.New("unknown type")
 }
 
 func (s *Sensors) GetEntity(param string) (interface{}, error) {
-	// errEnv := godotenv.Load()
-	// if errEnv != nil {
-	// 	return nil, errEnv
-	// }
-
 	var api string
 	typ, _ := s.GetElement("type")
 	switch *typ {
@@ -50,6 +54,8 @@ func (s *Sensors) GetEntity(param string) (interface{}, error) {
 		api = os.Getenv("API_TEMP")
 	case "humidity":
 		api = os.Getenv("API_HUMID")
+	case "light":
+		api = os.Getenv("API_LIGHT")
 	default:
 		return nil, errors.New(fmt.Sprintf("no type in entity:%s", *typ))
 	}
@@ -70,6 +76,7 @@ func (s *Sensors) GetEntity(param string) (interface{}, error) {
 		return nil, errSen
 	}
 
+	s.Created = time.Now().Format(repository.LayoutActionTimestamp)
 	s.Payload = sensors.Payload
 	s.Type = sensors.Payload[0].FeedKey
 	sensors.Type = *typ
@@ -104,19 +111,13 @@ func (s *Sensors) InsertData(payload interface{}) error {
 	if !ok {
 		return errors.New("InitField: Require a Sensors")
 	}
+	count, _ := database.CountDocuments(database.GetConnection().Database("SmartHomeDB"), "Sensors")
+	count++
 	sensors.Type = *typ
-	instanceSensor, _ := s.FindDocument("type", *typ)
-	// FIXME : BUG HERE
-	if instanceSensor != nil {
-		//s.Payload = append(s.Payload, sensors.Payload[0])
-		err := s.UpdateData("payload", sensors.Payload)
-		if err != nil {
-			return err
-		}
-		return nil
-	}
-
-	_, err := collection.InsertOne(context.TODO(), s)
+	sensors.Id = strconv.Itoa(int(count))
+	sensors.Created = s.Created
+	sensors.Edited = sensors.Payload[0].CreatedAt
+	_, err := collection.InsertOne(context.TODO(), sensors)
 	if err != nil {
 		return err
 	}
@@ -126,9 +127,7 @@ func (s *Sensors) FindDocument(key string, val string) (interface{}, error) {
 
 	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
 	filter := bson.D{{key, val}}
-
 	var res Sensors
-
 	err := collection.FindOne(context.TODO(), filter).Decode(&res)
 	if err != nil {
 		return nil, err

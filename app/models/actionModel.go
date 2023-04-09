@@ -5,6 +5,7 @@ import (
 	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"smhome/pkg/repository"
 	"smhome/platform/database"
 	"strconv"
 	"time"
@@ -20,11 +21,6 @@ type Action struct {
 	StatusDesc string `json:"status_desc"`
 	TimeStamp  string `json:"time_stamp"`
 }
-
-//type Actions struct {
-//	Type    string   `json:"type"`
-//	Payload []Action `json:"payload"`
-//}
 
 func (a *Action) DeleteEntity(key string, value string) error {
 	collection := database.GetCollection("Actions")
@@ -86,7 +82,7 @@ func (a *Action) InsertData(payload interface{}) error {
 	a.Status = action.Status
 	a.StatusDesc = action.StatusDesc
 	a.Sensor = action.Sensor
-	a.TimeStamp = t.Format("2006-01-02 15:04:05")
+	a.TimeStamp = t.Format(repository.LayoutActionTimestamp)
 	a.ActionName = action.ActionName
 	a.UserID = action.UserID
 

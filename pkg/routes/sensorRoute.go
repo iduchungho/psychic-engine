@@ -9,4 +9,5 @@ import (
 func SenSorRoute(r *fiber.App) {
 	r.Get("/api/sensor/temperature", controller.GetTemperature)
 	r.Get("/api/sensor/humidity", controller.GetHumidity)
+	r.Get("/api/sensor/light", controller.GetLight)
 }
