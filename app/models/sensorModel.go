@@ -2,14 +2,10 @@ package model
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
+	"github.com/pkg/errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"io"
-	"net/http"
-	"os"
-	"smhome/pkg/repository"
+	"go.mongodb.org/mongo-driver/mongo"
+	repo "smhome/pkg/repository"
 	"smhome/platform/database"
 	"strconv"
 	"time"
@@ -34,114 +30,66 @@ type Sensors struct {
 	Payload  []Sensor `json:"payload"`
 }
 
-func (s *Sensors) SetElement(typ string, value interface{}) error {
-	switch typ {
-	case "type":
-		s.Type = value.(string)
-		return nil
-	case "edited":
-		s.Edited = value.(string)
-		return nil
-	}
-	return errors.New("unknown type")
+type SensorDocx struct {
+	Data       Sensors
+	Collection *mongo.Collection
 }
 
-func (s *Sensors) GetEntity(param string) (interface{}, error) {
-	var api string
-	typ, _ := s.GetElement("type")
-	switch *typ {
-	case "temperature":
-		api = os.Getenv("API_TEMP")
-	case "humidity":
-		api = os.Getenv("API_HUMID")
-	case "light":
-		api = os.Getenv("API_LIGHT")
-	default:
-		return nil, errors.New(fmt.Sprintf("no type in entity:%s", *typ))
-	}
-	resp, err := http.Get(api)
+func (s SensorDocx) GetSensorByName(name string) (*Sensors, error) {
+	filter := bson.D{{"type", name}}
+	err := s.Collection.FindOne(context.TODO(), filter).Decode(&s.Data)
 	if err != nil {
 		return nil, err
 	}
-
-	//We Read the response body on the line below.
-	body, errBody := io.ReadAll(resp.Body)
-	if errBody != nil {
-		return nil, errBody
-	}
-
-	var sensors Sensors
-	errSen := json.Unmarshal(body, &sensors.Payload)
-	if errSen != nil {
-		return nil, errSen
-	}
-
-	s.Created = time.Now().Format(repository.LayoutActionTimestamp)
-	s.Payload = sensors.Payload
-	s.Type = sensors.Payload[0].FeedKey
-	sensors.Type = *typ
-	return sensors, nil
+	return &s.Data, nil
 }
 
-func (s *Sensors) DeleteEntity(key string, value string) error {
-	filter := bson.D{{key, value}}
-	collection := database.GetCollection("Sensors")
-	_, err := collection.DeleteOne(context.TODO(), filter)
+func (s SensorDocx) DeleteSensor(name string) error {
+	filter := bson.D{{"type", name}}
+	_, err := s.Collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (s *Sensors) UpdateData(key string, payload interface{}) error {
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
-	filter := bson.D{{"type", s.Type}}
-	update := bson.D{{"$set", bson.D{{key, payload}}}}
-	_, err := collection.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (s *Sensors) InsertData(payload interface{}) error {
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
-	typ, _ := s.GetElement("type")
-	sensors, ok := payload.(Sensors)
+func (s SensorDocx) CreateSensor(sensors interface{}) error {
+	sens, ok := sensors.(Sensors)
 	if !ok {
-		return errors.New("InitField: Require a Sensors")
+		return errors.New("require a sensor type")
 	}
-	count, _ := database.CountDocuments(database.GetConnection().Database("SmartHomeDB"), "Sensors")
+	typ := sens.Payload[0].FeedKey
+	sens.Type = typ
+	sens.Uploaded = time.Now().Format(repo.LayoutActionTimestamp)
+	sens.Edited = sens.Payload[0].CreatedAt
+
+	count, _ := database.CountDocuments(database.GetConnection().Database(repo.DB), repo.SENSOR)
 	count++
-	sensors.Type = *typ
-	sensors.Id = strconv.Itoa(int(count))
-	sensors.Created = s.Created
-	sensors.Edited = sensors.Payload[0].CreatedAt
-	_, err := collection.InsertOne(context.TODO(), sensors)
+	_, err := s.GetSensorByName(typ)
+	if err != nil {
+		sens.Created = time.Now().Format(repo.LayoutActionTimestamp)
+		sens.Id = strconv.Itoa(int(count))
+		s.Data = sens
+		_, err := s.Collection.InsertOne(context.TODO(), sens)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+	s.Data = sens
+	err = s.UpdateSensorByName(typ)
 	if err != nil {
 		return err
 	}
 	return nil
 }
-func (s *Sensors) FindDocument(key string, val string) (interface{}, error) {
 
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Sensors")
-	filter := bson.D{{key, val}}
-	var res Sensors
-	err := collection.FindOne(context.TODO(), filter).Decode(&res)
+func (s SensorDocx) UpdateSensorByName(name string) error {
+	filter := bson.D{{"type", name}}
+	update := bson.M{"$set": bson.M{"uploaded": s.Data.Uploaded, "edited": s.Data.Edited}}
+	_, err := s.Collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	s.Type = res.Type
-	s.Payload = res.Payload
-	return res, nil
-}
-
-func (s *Sensors) GetElement(msg string) (*string, error) {
-	switch msg {
-	case "type":
-		return &s.Type, nil
-	default:
-		return nil, errors.New("no element in user entity")
-	}
+	return nil
 }

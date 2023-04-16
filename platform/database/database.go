@@ -40,6 +40,12 @@ func createConnect() *mongo.Client {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//defer func(client *mongo.Client, ctx context.Context) {
+	//	err := client.Disconnect(ctx)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}(client, context.Background())
 
 	// Check the connection
 	err = client.Ping(context.TODO(), nil)
@@ -50,6 +56,13 @@ func createConnect() *mongo.Client {
 	return client
 }
 
+func Disconnect() {
+	err := connect.Disconnect(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func GetConnection() *mongo.Client {
 	if connect == nil {
 		// Apply Singleton Design Pattern
@@ -57,6 +70,7 @@ func GetConnection() *mongo.Client {
 		defer lock.Unlock()
 		if connect == nil {
 			connect = createConnect()
+
 			fmt.Println("MongoDB Connected")
 		} else {
 			return connect

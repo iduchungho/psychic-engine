@@ -1,9 +1,17 @@
 package service
 
 import (
-	md "smhome/app/models"
+	interfaces "smhome/app/interface"
+	repo "smhome/pkg/repository"
+	"smhome/platform/database"
 )
 
-func newAction() *md.Action {
-	return new(md.Action)
+type ActionService struct {
+	Factory interfaces.RepoFactory
+}
+
+func NewActionService() *ActionService {
+	return &ActionService{
+		Factory: NewFactory(database.GetCollection(repo.ACTION)),
+	}
 }

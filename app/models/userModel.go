@@ -2,10 +2,9 @@ package model
 
 import (
 	"context"
-	"errors"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"log"
+	"go.mongodb.org/mongo-driver/mongo"
+	repo "smhome/pkg/repository"
 	"smhome/platform/database"
 	"strconv"
 )
@@ -20,146 +19,76 @@ type User struct {
 	Avatar    string `json:"avatar" form:"avatar"`
 }
 
-func (u *User) SetElement(typ string, value interface{}) error {
-	switch typ {
-	case "type":
-		u.Type = value.(string)
-		return nil
-	case "avatar":
-		u.Avatar = value.(string)
-		return nil
-	case "firstname":
-		u.FirstName = value.(string)
-		return nil
-	case "lastname":
-		u.LastName = value.(string)
-		return nil
-	case "password":
-		u.Password = value.(string)
-		return nil
-	}
-	return errors.New("type not support")
+type UserDocx struct {
+	Data       User
+	Collection *mongo.Collection
 }
 
-func (u *User) GetEntity(param string) (interface{}, error) {
-	findOption := options.Find()
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Users")
-	var users []*User
-	cursor, err := collection.Find(context.TODO(), bson.D{{}}, findOption)
+func (u UserDocx) GetUserByID(id string) (*User, error) {
+	filter := bson.D{{"id", id}}
+	err := u.Collection.FindOne(context.TODO(), filter).Decode(&u.Data)
 	if err != nil {
 		return nil, err
 	}
-	for cursor.Next(context.TODO()) {
-		var elem User
-		err = cursor.Decode(&elem)
-		if err != nil {
-			log.Fatal(err)
-		}
-		users = append(users, &elem)
-	}
-	if err = cursor.Err(); err != nil {
-		return nil, err
-	}
-	err = cursor.Close(context.TODO())
+	//return &User{
+	//	Type:      repo.USER,
+	//	Id:        u.Data.Id,
+	//	FirstName: u.Data.FirstName,
+	//	LastName:  u.Data.LastName,
+	//	UserName:  u.Data.UserName,
+	//	Password:  u.Data.Password,
+	//	Avatar:    u.Data.Avatar,
+	//}, nil
+	return &u.Data, nil
+}
+
+func (u UserDocx) GetUserByUsername(username string) (*User, error) {
+	filter := bson.D{{"username", username}}
+	err := u.Collection.FindOne(context.TODO(), filter).Decode(&u.Data)
 	if err != nil {
 		return nil, err
 	}
-	return users, nil
+	//return &User{
+	//	Type:      repo.USER,
+	//	Id:        u.Data.Id,
+	//	FirstName: u.Data.FirstName,
+	//	LastName:  u.Data.LastName,
+	//	UserName:  u.Data.UserName,
+	//	Password:  u.Data.Password,
+	//	Avatar:    u.Data.Avatar,
+	//}, nil
+	return &u.Data, nil
 }
 
-func (u *User) DeleteEntity(key string, value string) error {
-	filter := bson.D{{key, value}}
-	collection := database.GetCollection("Users")
-	_, err := collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u *User) UpdateData(key string, payload interface{}) error {
-	filter := bson.D{{"username", u.UserName}}
-	update := bson.D{{"$set", bson.D{{key, payload}}}}
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Users")
-	_, err := collection.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (u *User) InsertData(payload interface{}) error {
-	user, ok := payload.(User)
-	if !ok {
-		return errors.New("InitField: Require a User")
-	}
-
-	count, _ := database.CountDocuments(database.GetConnection().Database("SmartHomeDB"), "Users")
+func (u UserDocx) CreateUser(user User) (*User, error) {
+	count, _ := database.CountDocuments(database.GetConnection().Database(repo.DB), repo.USER)
 	count++
-
-	u.Type = "user"
-	u.Id = strconv.FormatInt(count, 10)
-	u.UserName = user.UserName
-	u.FirstName = user.FirstName
-	u.LastName = user.LastName
-	u.Avatar = user.Avatar
-	u.Password = user.Password
-
-	res, _ := u.FindDocument("username", u.UserName)
-	if res != nil {
-		return errors.New("username already exist")
+	user.Id = strconv.Itoa(int(count))
+	user.Type = repo.USER
+	_, err := u.Collection.InsertOne(context.TODO(), user)
+	if err != nil {
+		return nil, err
 	}
+	u.Data = user
+	return &u.Data, nil
+}
 
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Users")
-
-	_, err := collection.InsertOne(context.TODO(), u)
+func (u UserDocx) DeleteUserByID(id string) error {
+	filter := bson.D{{"id", id}}
+	_, err := u.Collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		return err
 	}
 	return nil
-
 }
 
-func (u *User) FindDocument(key string, val string) (interface{}, error) {
-	filter := bson.D{{key, val}}
-
-	collection := database.GetConnection().Database("SmartHomeDB").Collection("Users")
-	var res User
-	err := collection.FindOne(context.TODO(), filter).Decode(&res)
-
-	// no documents
+func (u UserDocx) UpdateUser(id string, keyword string, value string) (*User, error) {
+	filter := bson.D{{"id", id}}
+	update := bson.M{"$set": bson.M{keyword: value}}
+	_, err := u.Collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
 		return nil, err
 	}
-
-	u.Type = res.Type
-	u.Id = res.Id
-	u.UserName = res.UserName
-	u.FirstName = res.FirstName
-	u.LastName = res.LastName
-	u.Avatar = res.Avatar
-	u.Password = res.Password
-
-	return res, nil
-}
-
-func (u *User) GetElement(msg string) (*string, error) {
-	switch msg {
-	case "type":
-		return &u.Type, nil
-	case "username":
-		return &u.UserName, nil
-	case "password":
-		return &u.Password, nil
-	case "id":
-		return &u.Id, nil
-	case "firstname":
-		return &u.FirstName, nil
-	case "lastname":
-		return &u.LastName, nil
-	case "avatar":
-		return &u.Avatar, nil
-	default:
-		return nil, errors.New("no element in user entity")
-	}
+	user, err := u.GetUserByID(id)
+	return user, err
 }

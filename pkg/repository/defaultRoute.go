@@ -1,4 +1,4 @@
-package repository
+package repo
 
 var DefaultRoutes = []string{
 	// user default routes
