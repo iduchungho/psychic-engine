@@ -2,9 +2,7 @@ package service
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
 	"github.com/pkg/errors"
-	"log"
 	"mime/multipart"
 	"os"
 	interfaces "smhome/app/interface"
@@ -52,18 +50,16 @@ func (user *UserService) Login(ctx *fiber.Ctx, username string, pass string) (*m
 		return nil, errors.New("Failed to create token")
 	}
 	// send it session
-	sess, errSess := cache.GetSessionStoreSlice(id).Get(ctx)
+	sess, errSess := cache.GetSessionStore().Get(ctx)
 	if errSess != nil {
 		return nil, errSess
 	}
 	// Save to session
 	sess.Set("Authorization", tokenString)
-	defer func(sess *session.Session) {
-		err := sess.Save()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(sess)
+	err = sess.Save()
+	if err != nil {
+		return nil, err
+	}
 	return byUsername, nil
 }
 

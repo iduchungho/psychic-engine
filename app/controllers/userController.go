@@ -2,8 +2,6 @@ package controller
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/session"
-	"log"
 	model "smhome/app/models"
 	service "smhome/pkg/services"
 	"smhome/platform/cache"
@@ -42,7 +40,7 @@ func Login(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
-	sess, err := cache.GetSessionStoreSlice(res.Id).Get(c)
+	sess, err := cache.GetSessionStore().Get(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
@@ -84,19 +82,21 @@ func Logout(c *fiber.Ctx) error {
 	*		find id to get session_id then delete it
 	**/
 
-	sess, err := cache.GetSessionStoreSlice(c.Params("id")).Get(c)
+	sess, err := cache.GetSessionStore().Get(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
 	}
 	sess.Set("Authorization", -1)
-	defer func(sess *session.Session) {
-		err := sess.Save()
+	err = sess.Save()
+	if err != nil {
 		if err != nil {
-			log.Fatal(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": err.Error(),
+			})
 		}
-	}(sess)
+	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"data":    "your session has been wiped",
 		"success": true,
