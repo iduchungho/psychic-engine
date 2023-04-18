@@ -60,9 +60,9 @@ func (app *App) Run() {
 		route.UserRoute(app.r)
 		//route.ActionRoute(app.r)
 
-		host := os.Getenv("HOST")
+		host := os.Getenv("PORT")
 		if host != "" {
-			err := app.r.Listen(host)
+			err := app.r.Listen(":" + host)
 			if err != nil {
 				panic("Can't run fiber engine")
 			}

@@ -1,17 +1,19 @@
-# Base image golang:1.16
-FROM golang:1.16
+# Sử dụng image golang:1.18
+FROM golang:1.18
 
-# Thiết lập thư mục làm việc
+# Thiết lập biến môi trường
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+# Sao chép mã nguồn ứng dụng vào image
 WORKDIR /app
-
-# Sao chép mã nguồn vào thư mục làm việc
 COPY . .
 
-# Biên dịch ứng dụng
-RUN go build -o main .
+# Build ứng dụng
+RUN go mod download
+RUN go build main.go
 
-# Thiết lập cổng mặc định
-EXPOSE 8080
-
-# Chạy ứng dụng khi container được khởi chạy
+# Chạy ứng dụng
 CMD ["./main"]

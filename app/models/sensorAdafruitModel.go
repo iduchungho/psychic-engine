@@ -21,7 +21,7 @@ import (
 // type : string (temperature, humility, light)
 type SensorAdafruit struct {
 	Conn   *mongo.Collection
-	Extend Sensors
+	Extend SensorDocx
 }
 
 func (sen SensorAdafruit) GetSensorByName(name string) (*Sensors, error) {
@@ -50,21 +50,24 @@ func (sen SensorAdafruit) GetSensorByName(name string) (*Sensors, error) {
 		return nil, errBody
 	}
 
-	errSen := json.Unmarshal(body, &sen.Extend.Payload)
+	errSen := json.Unmarshal(body, &sen.Extend.Data.Payload)
 	if errSen != nil {
 		return nil, errSen
 	}
-	err = sen.CreateSensor(sen.Extend)
+	err = sen.CreateSensor(sen.Extend.Data)
 	if err != nil {
 		return nil, err
 	}
-	return &sen.Extend, nil
+	sen.Extend.Collection = sen.Conn
+	data, _ := sen.Extend.GetSensorByName(name)
+	sen.Extend.Data = *data
+	return &sen.Extend.Data, nil
 }
 
 func (sen SensorAdafruit) DeleteSensor(name string) error {
 	return SensorDocx{
 		Collection: sen.Conn,
-		Data:       sen.Extend,
+		Data:       sen.Extend.Data,
 	}.DeleteSensor(name)
 }
 
@@ -82,6 +85,6 @@ func (sen SensorAdafruit) CreateSensor(sensors interface{}) error {
 func (sen SensorAdafruit) UpdateSensorByName(name string) error {
 	return SensorDocx{
 		Collection: sen.Conn,
-		Data:       sen.Extend,
+		Data:       sen.Extend.Data,
 	}.UpdateSensorByName(name)
 }
