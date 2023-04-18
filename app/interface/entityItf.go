@@ -2,7 +2,7 @@ package interfaces
 
 import model "smhome/app/models"
 
-type UserRepo interface {
+type IUserRepo interface {
 	GetUserByID(id string) (*model.User, error)
 	GetUserByUsername(username string) (*model.User, error)
 	CreateUser(user model.User) (*model.User, error)
@@ -10,20 +10,20 @@ type UserRepo interface {
 	UpdateUser(id string, keyword string, value string) (*model.User, error)
 }
 
-type SensorRepo interface {
+type ISensorRepo interface {
 	GetSensorByName(name string) (*model.Sensors, error)
 	DeleteSensor(name string) error
 	CreateSensor(sensors interface{}) error
 	UpdateSensorByName(name string) error
 }
 
-type NotifyRepo interface {
+type INotifyRepo interface {
 	GetAllNotify() (*[]model.Notification, error)
 	CreateNotify(payload model.Notification) error
 	DeleteNotifyById(id string) error
 }
 
-type ActionRepo interface {
+type IActionRepo interface {
 	CreateAction(action model.Action) error
 	GetAllAction() ([]model.Action, error)
 }

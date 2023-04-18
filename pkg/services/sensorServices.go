@@ -8,7 +8,7 @@ import (
 )
 
 type SensorService struct {
-	Factory interfaces.RepoFactory
+	Factory interfaces.IRepoFactory
 }
 
 func NewSensorService() *SensorService {

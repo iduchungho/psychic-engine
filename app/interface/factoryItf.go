@@ -9,18 +9,18 @@ import model "smhome/app/models"
 // Singleton pattern
 // Decorator pattern
 
-type RepoFactory interface {
-	NewUserRepo() UserRepo
-	NewActionRepo() ActionRepo
-	NewNotifyRepo() NotifyRepo
-	NewSensorRepo() SensorRepo
-	NewDocumentRepo() DocumentRepo
+type IRepoFactory interface {
+	NewUserRepo() IUserRepo
+	NewActionRepo() IActionRepo
+	NewNotifyRepo() INotifyRepo
+	NewSensorRepo() ISensorRepo
+	NewDocumentRepo() IDocumentRepo
 }
 
-type DocumentRepo interface {
-	UserRepo
-	ActionRepo
-	NotifyRepo
-	SensorRepo
+type IDocumentRepo interface {
+	IUserRepo
+	IActionRepo
+	INotifyRepo
+	ISensorRepo
 	GetSensorAdafruit(name string) (*model.Sensors, error)
 }

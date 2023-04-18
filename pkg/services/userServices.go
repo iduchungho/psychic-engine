@@ -15,7 +15,7 @@ import (
 )
 
 type UserService struct {
-	Factory interfaces.RepoFactory
+	Factory interfaces.IRepoFactory
 }
 
 func NewUserService() *UserService {

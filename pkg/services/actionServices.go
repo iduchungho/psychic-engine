@@ -7,7 +7,7 @@ import (
 )
 
 type ActionService struct {
-	Factory interfaces.RepoFactory
+	Factory interfaces.IRepoFactory
 }
 
 func NewActionService() *ActionService {
