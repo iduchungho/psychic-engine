@@ -18,12 +18,12 @@ type ISensorRepo interface {
 }
 
 type INotifyRepo interface {
-	GetAllNotify() (*[]model.Notification, error)
-	CreateNotify(payload model.Notification) error
+	GetAllNotify() ([]model.Notification, error)
+	CreateNotify(payload model.Notification) (*model.Notification, error)
 	DeleteNotifyById(id string) error
 }
 
 type IActionRepo interface {
-	CreateAction(action model.Action) error
-	GetAllAction() ([]model.Action, error)
+	CreateAction(action model.Action) (*model.Action, error)
+	GetAllAction(userID string) ([]model.Action, error)
 }

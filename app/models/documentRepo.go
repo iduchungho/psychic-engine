@@ -33,19 +33,19 @@ func (doc Document) UpdateUser(id string, keyword string, value string) (*User, 
 	return UserDocx{Collection: doc.collection}.UpdateUser(id, keyword, value)
 }
 
-func (doc Document) CreateAction(action Action) error {
+func (doc Document) CreateAction(action Action) (*Action, error) {
 	return ActionDocx{Collection: doc.collection, Data: action}.CreateAction(action)
 }
 
-func (doc Document) GetAllAction() ([]Action, error) {
-	return ActionDocx{Collection: doc.collection}.GetAllAction()
+func (doc Document) GetAllAction(userID string) ([]Action, error) {
+	return ActionDocx{Collection: doc.collection}.GetAllAction(userID)
 }
 
-func (doc Document) GetAllNotify() (*[]Notification, error) {
+func (doc Document) GetAllNotify() ([]Notification, error) {
 	return NotifyDocx{Collection: doc.collection}.GetAllNotify()
 }
 
-func (doc Document) CreateNotify(payload Notification) error {
+func (doc Document) CreateNotify(payload Notification) (*Notification, error) {
 	return NotifyDocx{Collection: doc.collection, Data: payload}.CreateNotify(payload)
 }
 

@@ -13,7 +13,6 @@ type EntityRepoFactory struct {
 func NewFactory(collection *mongo.Collection) *EntityRepoFactory {
 	return &EntityRepoFactory{collection: collection}
 }
-
 func (e *EntityRepoFactory) NewUserRepo() interfaces.IUserRepo {
 	return model.NewDocument(e.collection)
 }

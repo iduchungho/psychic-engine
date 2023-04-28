@@ -8,7 +8,13 @@ import (
 )
 
 func GetUserByID(c *fiber.Ctx) error {
-	id := c.Params("id")
+	id := c.Query("id", "none")
+	if id == "none" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?id = ...",
+			"success": false,
+		})
+	}
 	userService := service.NewUserService()
 	res, err := userService.GetUserByID(id)
 	if err != nil {
@@ -122,7 +128,13 @@ func ChangeAvatar(c *fiber.Ctx) error {
 		})
 	}
 
-	id := c.Params("id")
+	id := c.Query("id", "none")
+	if id == "none" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?id = ...",
+			"success": false,
+		})
+	}
 	userService := service.NewUserService()
 	userRepo, err := userService.ChangeAvatarByID(id, fileHeader)
 	if err != nil {
@@ -155,7 +167,13 @@ func ChangeAvatar(c *fiber.Ctx) error {
 //		})
 //	}
 func DeleteUser(c *fiber.Ctx) error {
-	id := c.Params("id")
+	id := c.Query("id", "none")
+	if id == "none" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?id = ...",
+			"success": false,
+		})
+	}
 	userService := service.NewUserService()
 	err := userService.DeleteUser(id)
 	if err != nil {
@@ -187,7 +205,13 @@ func UpdateInformation(c *fiber.Ctx) error {
 		})
 	}
 
-	id := c.Params("id")
+	id := c.Query("id", "none")
+	if id == "none" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?id = ...",
+			"success": false,
+		})
+	}
 
 	userService := service.NewUserService()
 	_, err := userService.UpdateInfo(id, body.FirstName, body.LastName, body.Password)

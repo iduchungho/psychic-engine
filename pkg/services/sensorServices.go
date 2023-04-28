@@ -27,7 +27,7 @@ func (sen *SensorService) GetTemperature() (*model.Sensors, error) {
 }
 
 func (sen *SensorService) GetHumility() (*model.Sensors, error) {
-	sen.Factory = NewFactory(database.GetCollection(repo.SENSOR))
+	//sen.Factory = NewFactory(database.GetCollection(repo.SENSOR))
 	sensor := sen.Factory.NewDocumentRepo()
 	adafruit, err := sensor.GetSensorAdafruit(repo.HUMIDITY)
 	if err != nil {
@@ -37,7 +37,7 @@ func (sen *SensorService) GetHumility() (*model.Sensors, error) {
 }
 
 func (sen *SensorService) GetLight() (*model.Sensors, error) {
-	sen.Factory = NewFactory(database.GetCollection(repo.SENSOR))
+	//sen.Factory = NewFactory(database.GetCollection(repo.SENSOR))
 	sensor := sen.Factory.NewDocumentRepo()
 	adafruit, err := sensor.GetSensorAdafruit(repo.LIGHT)
 	if err != nil {

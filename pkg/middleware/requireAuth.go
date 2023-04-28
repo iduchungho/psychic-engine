@@ -144,6 +144,13 @@ func RequireUserByID(c *fiber.Ctx) error {
 			"error": err.Error(),
 		})
 	}
+	id := c.Query("id", "none")
+	if id == "none" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?id = ...",
+			"success": false,
+		})
+	}
 	tkStr := sess.Get("Authorization")
 	if tkStr == nil || tkStr == -1 {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -183,10 +190,11 @@ func RequireUserByID(c *fiber.Ctx) error {
 		//		"success": false,
 		//	})
 		//}
-		if c.Params("id") != claims["sub"] {
+		if id != claims["sub"] {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"message": "not authorized",
 				"success": false,
+				"id":      id,
 			})
 		}
 		// attach to req

@@ -14,12 +14,12 @@ type NotifyDocx struct {
 	Collection *mongo.Collection
 }
 
-func (n NotifyDocx) GetAllNotify() (*[]Notification, error) {
+func (n NotifyDocx) GetAllNotify() ([]Notification, error) {
 	//TODO implement me
 	panic("implement me")
 }
 
-func (n NotifyDocx) CreateNotify(payload Notification) error {
+func (n NotifyDocx) CreateNotify(payload Notification) (*Notification, error) {
 	//TODO implement me
 	panic("implement me")
 }

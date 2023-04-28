@@ -58,7 +58,7 @@ func (app *App) Run() {
 		// routing services application
 		route.SenSorRoute(app.r)
 		route.UserRoute(app.r)
-		//route.ActionRoute(app.r)
+		route.ActionRoute(app.r)
 
 		host := os.Getenv("PORT")
 		if host != "" {
