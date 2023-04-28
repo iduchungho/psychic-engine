@@ -17,6 +17,8 @@ type User struct {
 	UserName  string `json:"username" form:"username"`
 	Password  string `json:"password" form:"password"`
 	Avatar    string `json:"avatar" form:"avatar"`
+	Email     string `json:"email" form:"email"`
+	Phone     string `json:"phone" form:"phone"`
 }
 
 type UserDocx struct {

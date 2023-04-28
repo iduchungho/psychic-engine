@@ -39,7 +39,7 @@ func (user *UserService) Login(ctx *fiber.Ctx, username string, pass string) (*m
 	hasPass := byUsername.Password
 	err = utils.ComparePassword(hasPass, pass)
 	if err != nil {
-		return nil, nil
+		return nil, errors.New("username or password incorrect")
 	}
 	// generate token
 	id := byUsername.Id
@@ -103,14 +103,33 @@ func (user *UserService) ChangeAvatarByID(id string, fileHeader *multipart.FileH
 	return update, nil
 }
 
-func (user *UserService) UpdateInfo(id string, firstname string, lastname string, pass string) (*model.User, error) {
+func (user *UserService) UpdateInfo(props ...string) (*model.User, error) {
+	var (
+		id        = props[0]
+		firstname = props[1]
+		lastname  = props[2]
+		oldPass   = props[3]
+		newPass   = props[4]
+	)
 	userRepo := user.Factory.NewUserRepo()
-	hashPass, err := utils.GenPassword(pass)
+	//hashOldPass, errOldPass := utils.GenPassword(oldPass)
+	//if errOldPass != nil {
+	//	return nil, errOldPass
+	//}
+	hashNewPass, errNewPass := utils.GenPassword(newPass)
+	if errNewPass != nil {
+		return nil, errNewPass
+	}
+	userOj, err := userRepo.GetUserByID(id)
 	if err != nil {
 		return nil, err
 	}
+	err = utils.ComparePassword(userOj.Password, oldPass)
+	if err != nil {
+		return nil, errors.New("password incorrect")
+	}
 	var ret *model.User
-	if ret, err = userRepo.UpdateUser(id, "password", string(hashPass)); err != nil {
+	if ret, err = userRepo.UpdateUser(id, "password", string(hashNewPass)); err != nil {
 		return nil, err
 	}
 	if ret, err = userRepo.UpdateUser(id, "firstname", firstname); err != nil {

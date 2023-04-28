@@ -8,5 +8,5 @@ import (
 
 func ActionRoute(r *fiber.App) {
 	r.Get("/api/action/get", controller.GetActionByID)
-	r.Post("/api/action/log", middleware.RequireUserID, controller.PushActionLog)
+	r.Post("/api/action/log", middleware.RequireUserByID, controller.PushActionLog)
 }

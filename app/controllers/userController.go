@@ -36,20 +36,23 @@ func Login(c *fiber.Ctx) error {
 	}
 	if c.BodyParser(&body) != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to parse body",
+			"error":   "Failed to parse body",
+			"success": false,
 		})
 	}
 	userService := service.NewUserService()
 	res, err := userService.Login(c, body.Username, body.Password)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   err.Error(),
+			"success": false,
 		})
 	}
 	sess, err := cache.GetSessionStore().Get(c)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
+			"error":   err.Error(),
+			"success": false,
 		})
 	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -194,14 +197,16 @@ func DeleteUser(c *fiber.Ctx) error {
 
 func UpdateInformation(c *fiber.Ctx) error {
 	var body struct {
-		FirstName string `json:"firstname"`
-		LastName  string `json:"lastname"`
-		Password  string `json:"password"`
+		FirstName   string `json:"firstname"`
+		LastName    string `json:"lastname"`
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
 	}
 
 	if c.BodyParser(&body) != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "can't read body request",
+			"error":   "can't read body request",
+			"success": false,
 		})
 	}
 
@@ -214,10 +219,11 @@ func UpdateInformation(c *fiber.Ctx) error {
 	}
 
 	userService := service.NewUserService()
-	_, err := userService.UpdateInfo(id, body.FirstName, body.LastName, body.Password)
+	_, err := userService.UpdateInfo(id, body.FirstName, body.LastName, body.OldPassword, body.NewPassword)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error":   err.Error(),
+			"success": false,
 		})
 	}
 
