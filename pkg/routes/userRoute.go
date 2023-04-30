@@ -2,7 +2,7 @@ package route
 
 import (
 	"github.com/gofiber/fiber/v2"
-	controller "smhome/app/controllers"
+	"smhome/app/controllers"
 	"smhome/pkg/middleware"
 )
 
@@ -13,7 +13,8 @@ func UserRoute(r *fiber.App) {
 	r.Post("/api/user/login", controller.Login)
 	r.Post("/api/user/new", controller.AddNewUser)
 	r.Put("/api/user/changeAvatar", middleware.RequireUserByID, controller.ChangeAvatar)
-	r.Put("/api/user/update", middleware.RequireUserByID, controller.UpdateInformation)
+	r.Put("/api/user/update/info", middleware.RequireUserByID, controller.UpdateInformation)
 	r.Delete("/api/user/delete", middleware.RequireUserByID, controller.DeleteUser)
+	r.Put("/api/user/update/pass", middleware.RequireUserByID, controller.UpdatePassword)
 
 }

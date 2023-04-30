@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/joho/godotenv"
+	"github.com/pkg/errors"
 	"golang.org/x/crypto/bcrypt"
 	"os"
 	"strconv"
@@ -29,4 +31,12 @@ func GenerateToken(id string) *jwt.Token {
 		"sub": id,
 		"exp": time.Now().Add(time.Hour * 24 * 30).Unix(), // 1 day
 	})
+}
+
+func RequireID(c *fiber.Ctx) (*string, error) {
+	id := c.Query("id", "none")
+	if id == "none" {
+		return nil, errors.New("require ?id = ...")
+	}
+	return &id, nil
 }

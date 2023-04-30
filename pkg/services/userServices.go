@@ -108,30 +108,10 @@ func (user *UserService) UpdateInfo(props ...string) (*model.User, error) {
 		id        = props[0]
 		firstname = props[1]
 		lastname  = props[2]
-		oldPass   = props[3]
-		newPass   = props[4]
 	)
 	userRepo := user.Factory.NewUserRepo()
-	//hashOldPass, errOldPass := utils.GenPassword(oldPass)
-	//if errOldPass != nil {
-	//	return nil, errOldPass
-	//}
-	hashNewPass, errNewPass := utils.GenPassword(newPass)
-	if errNewPass != nil {
-		return nil, errNewPass
-	}
-	userOj, err := userRepo.GetUserByID(id)
-	if err != nil {
-		return nil, err
-	}
-	err = utils.ComparePassword(userOj.Password, oldPass)
-	if err != nil {
-		return nil, errors.New("password incorrect")
-	}
 	var ret *model.User
-	if ret, err = userRepo.UpdateUser(id, "password", string(hashNewPass)); err != nil {
-		return nil, err
-	}
+	var err = errors.New("")
 	if ret, err = userRepo.UpdateUser(id, "firstname", firstname); err != nil {
 		return nil, err
 	}
@@ -145,4 +125,33 @@ func (user *UserService) DeleteUser(id string) error {
 	userRepo := user.Factory.NewUserRepo()
 	err := userRepo.DeleteUserByID(id)
 	return err
+}
+
+func (user *UserService) UpdatePass(c *fiber.Ctx, id string) (*string, error) {
+	var body struct {
+		OldPassword string `json:"old_password"`
+		NewPassword string `json:"new_password"`
+	}
+
+	if err := c.BodyParser(&body); err != nil {
+		return nil, err
+	}
+	userRepo := user.Factory.NewUserRepo()
+	hashNewPass, errNewPass := utils.GenPassword(body.NewPassword)
+	if errNewPass != nil {
+		return nil, errNewPass
+	}
+	userOj, err := userRepo.GetUserByID(id)
+	if err != nil {
+		return nil, err
+	}
+	err = utils.ComparePassword(userOj.Password, body.OldPassword)
+	if err != nil {
+		return nil, errors.New("password incorrect")
+	}
+	_, err = userRepo.UpdateUser(id, "password", string(hashNewPass))
+	if err != nil {
+		return nil, err
+	}
+	return &body.NewPassword, nil
 }

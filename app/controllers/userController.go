@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	model "smhome/app/models"
 	service "smhome/pkg/services"
+	"smhome/pkg/utils"
 	"smhome/platform/cache"
 )
 
@@ -91,23 +92,15 @@ func Logout(c *fiber.Ctx) error {
 	*		find id to get session_id then delete it
 	**/
 
-	sess, err := cache.GetSessionStore().Get(c)
+	msg, err := utils.RemoveDataSession(c)
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": err.Error(),
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+			"success": false,
 		})
 	}
-	sess.Set("Authorization", -1)
-	err = sess.Save()
-	if err != nil {
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": err.Error(),
-			})
-		}
-	}
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data":    "your session has been wiped",
+		"data":    msg,
 		"success": true,
 	})
 }
@@ -197,10 +190,8 @@ func DeleteUser(c *fiber.Ctx) error {
 
 func UpdateInformation(c *fiber.Ctx) error {
 	var body struct {
-		FirstName   string `json:"firstname"`
-		LastName    string `json:"lastname"`
-		OldPassword string `json:"old_password"`
-		NewPassword string `json:"new_password"`
+		FirstName string `json:"firstname"`
+		LastName  string `json:"lastname"`
 	}
 
 	if c.BodyParser(&body) != nil {
@@ -219,7 +210,7 @@ func UpdateInformation(c *fiber.Ctx) error {
 	}
 
 	userService := service.NewUserService()
-	_, err := userService.UpdateInfo(id, body.FirstName, body.LastName, body.OldPassword, body.NewPassword)
+	_, err := userService.UpdateInfo(id, body.FirstName, body.LastName)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   err.Error(),
@@ -228,8 +219,37 @@ func UpdateInformation(c *fiber.Ctx) error {
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"data":    body,
 		"success": true,
 		"message": "ok",
+	})
+}
+
+func UpdatePassword(c *fiber.Ctx) error {
+	id, err := utils.RequireID(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?id = ...",
+			"success": false,
+		})
+	}
+	userService := service.NewUserService()
+	msg, err := userService.UpdatePass(c, *id)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+			"success": false,
+		})
+	}
+	ses, err := utils.RemoveDataSession(c)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": err.Error(),
+			"success": false,
+		})
+	}
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": *msg,
+		"status":  *ses,
 	})
 }
