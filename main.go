@@ -17,12 +17,12 @@ import (
 	"smhome/pkg/utils"
 )
 
-// @title smhome: main
-// @version 1.0
-// @description: main function where every beginning.
-// @BasePath /api
-// @yesic4n GitHub
-// @name Authorization
+// ! @title smhome: main
+// ! @version 1.0
+// ! @description: main function where every beginning.
+// ! @BasePath /api
+// ! @yesic4n GitHub
+// ! @name Authorization
 func main() {
 	////////////////////////////////
 	// comment line for heroku deployment

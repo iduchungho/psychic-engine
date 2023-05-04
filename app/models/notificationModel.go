@@ -1,12 +1,17 @@
 package model
 
-import "go.mongodb.org/mongo-driver/mongo"
+import (
+	"context"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"log"
+)
 
 type Notification struct {
-	Status  string `json:"status"`
 	Content string `json:"content"`
 	Date    string `json:"date"`
 	Type    string `json:"type"`
+	UserId  string `json:"userid"`
 }
 
 type NotifyDocx struct {
@@ -14,14 +19,33 @@ type NotifyDocx struct {
 	Collection *mongo.Collection
 }
 
-func (n NotifyDocx) GetAllNotify() ([]Notification, error) {
-	//TODO implement me
-	panic("implement me")
+func (n NotifyDocx) GetAllNotify(userID string) ([]Notification, error) {
+	filter := bson.D{{"userid", userID}}
+	cur, err := n.Collection.Find(context.TODO(), filter)
+	if err != nil {
+		return nil, err
+	}
+	defer func(cur *mongo.Cursor, ctx context.Context) {
+		err := cur.Close(ctx)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(cur, context.Background())
+
+	var Noty []Notification
+	if err = cur.All(context.Background(), &Noty); err != nil {
+		return nil, err
+	}
+	return Noty, nil
 }
 
 func (n NotifyDocx) CreateNotify(payload Notification) (*Notification, error) {
-	//TODO implement me
-	panic("implement me")
+	_, err := n.Collection.InsertOne(context.TODO(), payload)
+	if err != nil {
+		return nil, err
+	}
+	n.Data = payload
+	return &n.Data, nil
 }
 
 func (n NotifyDocx) DeleteNotifyById(id string) error {

@@ -8,4 +8,5 @@ import (
 
 func NotifyRoute(r *fiber.App) {
 	r.Get("/api/noty/get", middleware.RequireUserByID, controller.GetNotyByUserID)
+	r.Get("/api/noty/push", middleware.RequireUserByID, controller.PushNoty)
 }

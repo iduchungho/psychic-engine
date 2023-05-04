@@ -15,6 +15,7 @@ type IRepoFactory interface {
 	NewNotifyRepo() INotifyRepo
 	NewSensorRepo() ISensorRepo
 	NewDocumentRepo() IDocumentRepo
+	NewDataRepo() IDataRepo
 }
 
 type IDocumentRepo interface {
@@ -22,5 +23,6 @@ type IDocumentRepo interface {
 	IActionRepo
 	INotifyRepo
 	ISensorRepo
+	IDataRepo
 	GetSensorAdafruit(name string) (*model.Sensors, error)
 }

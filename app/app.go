@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"os"
-	"smhome/pkg/middleware"
 	"smhome/pkg/routes"
 	"sync"
 
@@ -50,7 +49,7 @@ func (app *App) Run() {
 
 		// logger actions to server
 		app.r.Use(logger.New())
-		app.r.Use(middleware.Redirect)
+		//app.r.Use(middleware.Redirect)
 
 		// generate collection
 		//database.GenerateCollection()
@@ -60,10 +59,11 @@ func (app *App) Run() {
 		route.UserRoute(app.r)
 		route.ActionRoute(app.r)
 		route.NotifyRoute(app.r)
+		route.SensorDataRoute(app.r)
 
 		host := os.Getenv("PORT")
 		if host != "" {
-			err := app.r.Listen(":" + host)
+			err := app.r.Listen("localhost:" + host)
 			if err != nil {
 				panic("Can't run fiber engine")
 			}

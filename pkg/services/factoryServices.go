@@ -28,3 +28,6 @@ func (e *EntityRepoFactory) NewSensorRepo() interfaces.ISensorRepo {
 func (e *EntityRepoFactory) NewDocumentRepo() interfaces.IDocumentRepo {
 	return model.NewDocument(e.collection)
 }
+func (e *EntityRepoFactory) NewDataRepo() interfaces.IDataRepo {
+	return model.NewDocument(e.collection)
+}

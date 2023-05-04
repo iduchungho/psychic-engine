@@ -192,6 +192,8 @@ func UpdateInformation(c *fiber.Ctx) error {
 	var body struct {
 		FirstName string `json:"firstname"`
 		LastName  string `json:"lastname"`
+		Email     string `json:"email"`
+		Phone     string `json:"phone"`
 	}
 
 	if c.BodyParser(&body) != nil {
@@ -210,7 +212,7 @@ func UpdateInformation(c *fiber.Ctx) error {
 	}
 
 	userService := service.NewUserService()
-	_, err := userService.UpdateInfo(id, body.FirstName, body.LastName)
+	res, err := userService.UpdateInfo(id, body.FirstName, body.LastName, body.Email, body.Phone)
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error":   err.Error(),
@@ -220,7 +222,7 @@ func UpdateInformation(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
-		"message": "ok",
+		"message": res,
 	})
 }
 

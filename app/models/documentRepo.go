@@ -41,8 +41,8 @@ func (doc Document) GetAllAction(userID string) ([]Action, error) {
 	return ActionDocx{Collection: doc.collection}.GetAllAction(userID)
 }
 
-func (doc Document) GetAllNotify() ([]Notification, error) {
-	return NotifyDocx{Collection: doc.collection}.GetAllNotify()
+func (doc Document) GetAllNotify(userID string) ([]Notification, error) {
+	return NotifyDocx{Collection: doc.collection}.GetAllNotify(userID)
 }
 
 func (doc Document) CreateNotify(payload Notification) (*Notification, error) {
@@ -71,6 +71,14 @@ func (doc Document) CreateSensor(sensors interface{}) error {
 
 func (doc Document) UpdateSensorByName(name string) error {
 	return SensorDocx{Collection: doc.collection}.UpdateSensorByName(name)
+}
+
+func (doc Document) PushSensorData(data SensorData) (*SensorData, error) {
+	return SensorDataDocx{Collection: doc.collection}.PushSensorData(data)
+}
+
+func (doc Document) UpdateSensorData(data SensorData) (*SensorData, error) {
+	return SensorDataDocx{Collection: doc.collection}.UpdateSensorData(data)
 }
 
 func (doc Document) GetSensorAdafruit(name string) (*Sensors, error) {

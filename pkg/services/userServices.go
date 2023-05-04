@@ -108,6 +108,8 @@ func (user *UserService) UpdateInfo(props ...string) (*model.User, error) {
 		id        = props[0]
 		firstname = props[1]
 		lastname  = props[2]
+		email     = props[3]
+		phone     = props[4]
 	)
 	userRepo := user.Factory.NewUserRepo()
 	var ret *model.User
@@ -116,6 +118,12 @@ func (user *UserService) UpdateInfo(props ...string) (*model.User, error) {
 		return nil, err
 	}
 	if ret, err = userRepo.UpdateUser(id, "lastname", lastname); err != nil {
+		return nil, err
+	}
+	if ret, err = userRepo.UpdateUser(id, "email", email); err != nil {
+		return nil, err
+	}
+	if ret, err = userRepo.UpdateUser(id, "phone", phone); err != nil {
 		return nil, err
 	}
 	return ret, err
