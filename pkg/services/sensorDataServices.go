@@ -54,15 +54,20 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 	}
 
 	sensorData := new(model.SensorData)
-
-	sensorData.Type = typ
 	errSen := json.Unmarshal(body, &sensorData.Payload)
 	if errSen != nil {
 		return nil, errSen
 	}
-	filter, _ := utils.FilterOneDay(sensorData.Payload)
+	filter, err := utils.FilterOneDay(sensorData.Payload)
+	if err != nil {
+		return nil, err
+	}
+	tm, _ := time.Parse(repo.LayoutTimestamp, filter[0].CreatedAt)
+	timeID := fmt.Sprintf("%d%d%d", tm.Year(), tm.Month(), tm.Day())
+	sensorData.Type = typ
 	sensorData.Date = filter[0].CreatedAt
 	sensorData.Payload = filter
+	sensorData.TimeID = timeID
 
 	var collect string
 	switch typ {
@@ -89,9 +94,10 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 		}
 		return sensorData, nil
 	}
+	//log.Fatal(id)
 	err = database.GetCollection(collect).FindOne(context.TODO(), bson.D{{"id", id}}).Decode(&dataDB)
 	//return &dataDB, errors.New(collect)
-	//log.Fatal(id)
+	//log.Fatal(err)
 	if err != nil && err == mongo.ErrNoDocuments {
 		_, err = dataRepo.PushSensorData(*sensorData)
 		if err != nil {
@@ -106,6 +112,7 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 			sensorData.Id = id
 			sensorData.Type = typ
 			sensorData.Date = sensorData.Payload[0].CreatedAt
+			sensorData.TimeID = timeID
 			_, err = dataRepo.UpdateSensorData(*sensorData)
 			if err != nil {
 				return nil, err

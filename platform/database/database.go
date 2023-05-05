@@ -97,6 +97,10 @@ func GetCollection(collectionName string) *mongo.Collection {
 		return GetConnection().Database("SmartHomeDB").Collection("Notifications")
 	case repo.DTemp:
 		return GetConnection().Database("SmartHomeDB").Collection(repo.DTemp)
+	case repo.DHumid:
+		return GetConnection().Database("SmartHomeDB").Collection(repo.DHumid)
+	case repo.DLight:
+		return GetConnection().Database("SmartHomeDB").Collection(repo.DLight)
 	}
 	return nil
 }

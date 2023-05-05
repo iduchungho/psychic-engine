@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	repo "smhome/pkg/repository"
 	service "smhome/pkg/services"
+	"smhome/pkg/utils"
 )
 
 func SensorStats(c *fiber.Ctx) error {
@@ -34,13 +35,14 @@ func SensorStats(c *fiber.Ctx) error {
 	dataService := service.NewDataService(sensor.service)
 	data, err := dataService.GetSensorData(sensor.data)
 	if err != nil {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   err.Error(),
 			"success": false,
 		})
 	}
+	res, _ := utils.SensorDataStat(*data)
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"message": data,
+		"message": res,
 		"success": true,
 	})
 }

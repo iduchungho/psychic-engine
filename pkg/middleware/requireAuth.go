@@ -210,5 +210,5 @@ func RequireUserByID(c *fiber.Ctx) error {
 			return c.SendStatus(fiber.StatusInternalServerError)
 		}
 	}
-	return c.SendStatus(fiber.StatusOK)
+	return nil
 }

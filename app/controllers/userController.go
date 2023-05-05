@@ -237,8 +237,8 @@ func UpdatePassword(c *fiber.Ctx) error {
 	userService := service.NewUserService()
 	msg, err := userService.UpdatePass(c, *id)
 	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": err.Error(),
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"error":   err.Error(),
 			"success": false,
 		})
 	}

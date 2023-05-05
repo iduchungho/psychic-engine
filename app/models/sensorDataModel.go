@@ -13,6 +13,7 @@ type SensorData struct {
 	Id      string   `json:"id"`
 	Type    string   `json:"type"`
 	Date    string   `json:"date"`
+	TimeID  string   `json:"timeID"`
 	Payload []Sensor `json:"payload"`
 }
 
