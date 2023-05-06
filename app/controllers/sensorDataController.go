@@ -15,6 +15,13 @@ func SensorStats(c *fiber.Ctx) error {
 			"success": false,
 		})
 	}
+	date := c.Query("date", "none")
+	if typ == "none" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "require ?typ = ...",
+			"success": false,
+		})
+	}
 	var sensor struct {
 		service string
 		data    string
@@ -33,7 +40,7 @@ func SensorStats(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 	dataService := service.NewDataService(sensor.service)
-	data, err := dataService.GetSensorData(sensor.data)
+	data, err := dataService.GetSensorData(sensor.data, date)
 	if err != nil {
 		return c.Status(fiber.StatusBadGateway).JSON(fiber.Map{
 			"error":   err.Error(),

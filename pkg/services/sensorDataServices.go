@@ -29,7 +29,7 @@ func NewDataService(typ string) *DSensorService {
 	}
 }
 
-func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error) {
+func (DSens *DSensorService) GetSensorData(typ string, date string) (*model.SensorData, error) {
 	dataRepo := DSens.Factory.NewDataRepo()
 	var api string
 	switch typ {
@@ -83,6 +83,7 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 	if err != nil {
 		return nil, err
 	}
+	//log.Fatal(err)
 
 	var dataDB model.SensorData
 
@@ -91,6 +92,11 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 		_, err = dataRepo.PushSensorData(*sensorData)
 		if err != nil {
 			return nil, err
+		}
+		find := database.GetCollection(collect).FindOne(
+			context.TODO(), bson.D{{"timeid", date}}).Decode(sensorData)
+		if find != nil {
+			return nil, find
 		}
 		return sensorData, nil
 	}
@@ -102,6 +108,11 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 		_, err = dataRepo.PushSensorData(*sensorData)
 		if err != nil {
 			return nil, err
+		}
+		find := database.GetCollection(collect).FindOne(
+			context.TODO(), bson.D{{"timeid", date}}).Decode(sensorData)
+		if find != nil {
+			return nil, find
 		}
 	} else {
 		tDB, _ := time.Parse(repo.LayoutTimestamp, dataDB.Date)
@@ -117,11 +128,21 @@ func (DSens *DSensorService) GetSensorData(typ string) (*model.SensorData, error
 			if err != nil {
 				return nil, err
 			}
-			return sensorData, nil
+			find := database.GetCollection(collect).FindOne(
+				context.TODO(), bson.D{{"timeid", date}}).Decode(sensorData)
+			if find != nil {
+				return nil, find
+			}
+			//return sensorData, nil
 		} else {
 			_, err = dataRepo.PushSensorData(*sensorData)
 			if err != nil {
 				return nil, err
+			}
+			find := database.GetCollection(collect).FindOne(
+				context.TODO(), bson.D{{"timeid", date}}).Decode(sensorData)
+			if find != nil {
+				return nil, find
 			}
 		}
 	}
