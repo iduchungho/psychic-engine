@@ -1,3 +1,3 @@
 # psychic engine
-## multidisciplinary-project-se (software engineering) - backend
+multidisciplinary-project-se (software engineering) - backend
 
