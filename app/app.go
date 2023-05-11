@@ -63,7 +63,7 @@ func (app *App) Run() {
 
 		host := os.Getenv("PORT")
 		if host != "" {
-			err := app.r.Listen(":" + host)
+			err := app.r.Listen("localhost:" + host)
 			if err != nil {
 				panic("Can't run fiber engine")
 			}
