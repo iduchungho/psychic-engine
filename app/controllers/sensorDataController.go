@@ -1,24 +1,25 @@
 package controller
 
 import (
-	"github.com/gofiber/fiber/v2"
 	repo "smhome/pkg/repository"
 	service "smhome/pkg/services"
 	"smhome/pkg/utils"
+
+	"github.com/gofiber/fiber/v2"
 )
 
 func SensorStats(c *fiber.Ctx) error {
 	typ := c.Query("type", "none")
 	if typ == "none" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "require ?typ = ...",
+			"message": "require ?type = ...",
 			"success": false,
 		})
 	}
 	date := c.Query("date", "none")
-	if typ == "none" {
+	if date == "none" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "require ?typ = ...",
+			"message": "require ?date = ...",
 			"success": false,
 		})
 	}
